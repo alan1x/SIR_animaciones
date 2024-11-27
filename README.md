@@ -10,7 +10,7 @@ Este repositorio contiene una simulación del modelo SIR (Susceptible, Infectado
 - `Rectangulo_Cluster.py`: Implementación del modelo SIR en una distribución rectangular con clústeres.
 
 ## Requisitos
-- Python 3.x
+- Python 3
 - Bibliotecas: numpy, pandas, matplotlib
 
 Puedes instalar las bibliotecas necesarias usando pip:
