@@ -13,7 +13,5 @@ Este repositorio contiene una simulación del modelo SIR (Susceptible, Infectado
 - Python 3
 - Bibliotecas: numpy, pandas, matplotlib
 
-Puedes instalar las bibliotecas necesarias usando pip:
-
 ```sh
 pip install numpy pandas matplotlib
