@@ -177,13 +177,13 @@ class SIRModelVisual:
         )
         
   
-        self.count_text = self.ax2.text(
-            0.02, 0.98, 
-            transform=self.ax2.transAxes, 
-            fontsize=9,
-            verticalalignment='top',
-            bbox=dict(facecolor='white', alpha=0.7, edgecolor='none')
-        )
+        # self.count_text = self.ax2.text(
+        #     0.02, 0.98, 
+        #     transform=self.ax2.transAxes, 
+        #     fontsize=9,
+        #     verticalalignment='top',
+        #     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none')
+        # )
 
     def update(self, frame):
         self.update_states()
@@ -216,6 +216,7 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
+        self.anim.save('sir_simulation_circulo_cluster.mp4', writer='ffmpeg')
         plt.show()
 
     def show_frames(self, frame_numbers):
@@ -293,7 +294,7 @@ class SIRModelVisual:
 
 def main():
     sir_visual = SIRModelVisual(SIR_PARAMS)
-    # sir_visual.animate() Comentar para ver solo los frames
-    sir_visual.show_frames([5,20,40]) #comentar para ver la animación
+    sir_visual.animate() #Comentar para ver solo los frames
+    #sir_visual.show_frames([5,20,40]) #comentar para ver la animación
 if __name__ == "__main__":
     main()

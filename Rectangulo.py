@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
+
 GREY = (0.78, 0.78, 0.78)  # Susceptible
 RED = (0.96, 0.15, 0.15)   # Infectado
 GREEN = (0, 0.86, 0.03)    # Recuperado
@@ -23,17 +24,23 @@ SIR_PARAMS = {
 
 class SIRModelVisual:
     def __init__(self, params):
+
         self.N = params["N"]
         self.I0 = params["I0"]
+        
+
         self.xmin = params.get("xmin", -2)
         self.xmax = params.get("xmax", 2)
         self.ymin = params.get("ymin", -2)
         self.ymax = params.get("ymax", 2)
+        
+
         self.infection_radius = params["infection_radius"]
         self.recovery_rate = params["recovery_rate"]
         self.infection_rate = params.get("infection_rate", 0.3)
         self.min_infection_time = params.get("min_infection_time", 5)
         self.infection_durations = np.zeros(params["N"])
+        
 
         self.S_data = []
         self.I_data = []
@@ -44,51 +51,44 @@ class SIRModelVisual:
 
         self.df = self._initialize_population(params)
         self.setup_visualization()
-        
+
     def _initialize_population(self, params):
 
-        x = np.random.uniform(params["xmin"], params["xmax"], self.N)
-        y = np.random.uniform(params["ymin"], params["ymax"], self.N)
-        
-
-        states = np.array(['S'] * self.N)
-        infected_idx = np.random.choice(self.N, self.I0, replace=False)
-        states[infected_idx] = 'I'
-        
-
-        df = pd.DataFrame({
-            'id': range(self.N),
-            'x': x,
-            'y': y,
-            'state': states,
-            'iteration': 0
-        })
-        
+        data = {
+            'id': np.arange(params["N"]),
+            'x': np.random.uniform(self.xmin, self.xmax, params["N"]),
+            'y': np.random.uniform(self.ymin, self.ymax, params["N"]),
+            'state': ['S'] * params["N"]
+        }
+        df = pd.DataFrame(data)
+        initial_infected = np.random.choice(df.index, params["I0"], replace=False)
+        df.loc[initial_infected, 'state'] = 'I'
         return df
-    
-    def check_distance(self, x1, y1, x2, y2):
 
-        distance = np.sqrt((x2-x1)**2 + (y2-y1)**2)
-        return distance < self.infection_radius
-    
+    def check_distance(self, x1, y1, x2, y2):
+        return np.sqrt((x1 - x2)**2 + (y1 - y2)**2) <= self.infection_radius
+
     def update_states(self):
 
         infected = self.df[self.df['state'] == 'I']
         susceptible = self.df[self.df['state'] == 'S']
+        
 
         infected_mask = self.df['state'] == 'I'
         self.infection_durations[infected_mask] += 1
         
+
         infected = self.df[infected_mask]
         susceptible = self.df[self.df['state'] == 'S']
         
         for _, sus in susceptible.iterrows():
             for _, inf in infected.iterrows():
                 if self.check_distance(sus['x'], sus['y'], inf['x'], inf['y']):
-                    if np.random.random() < self.infection_rate:  
+                    if np.random.random() < self.infection_rate:
                         self.df.loc[sus['id'], 'state'] = 'I'
                         break
         
+
         can_recover = (infected_mask) & (self.infection_durations >= self.min_infection_time)
         recovery_candidates = self.df[can_recover]
         
@@ -100,14 +100,12 @@ class SIRModelVisual:
         self.df['iteration'] = self.day
 
     def setup_visualization(self):
-
         self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(12, 5))
         
-
         self.scatter = self.ax1.scatter(self.df['x'], self.df['y'], 
                                       c=self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
-        self.ax1.set_xlim(SIR_PARAMS["xmin"], SIR_PARAMS["xmax"])
-        self.ax1.set_ylim(SIR_PARAMS["ymin"], SIR_PARAMS["ymax"])
+        self.ax1.set_xlim(self.xmin, self.xmax)
+        self.ax1.set_ylim(self.ymin, self.ymax)
         
 
         self.ax2.set_xlim(0, 100)
@@ -142,11 +140,9 @@ class SIRModelVisual:
         self.I_data.append(i_count)
         self.R_data.append(r_count)
         
-
         self.line_s.set_data(self.time_data, self.S_data)
         self.line_i.set_data(self.time_data, self.I_data)
         self.line_r.set_data(self.time_data, self.R_data)
-        
 
         self.line_s.set_label(f'Susceptibles: {s_count}')
         self.line_i.set_label(f'Infectados: {i_count}')
@@ -163,9 +159,11 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
+        self.anim.save('sir_simulation.mp4', writer='ffmpeg') #comentar para ver la animación y descomentar para guardarla
         plt.show()
-    
+
     def show_frames(self, frame_numbers):
+
         original_df = self.df.copy()
         original_time = self.time_data.copy()
         original_S = self.S_data.copy()
@@ -174,33 +172,22 @@ class SIRModelVisual:
         original_day = self.day
         
         for frame in frame_numbers:
-            self.df = original_df.copy()
-            self.time_data = []
-            self.S_data = []
-            self.I_data = []
-            self.R_data = []
-            self.day = 0
-            self.infection_durations = np.zeros(self.N)
+            self.update(frame)
+            self.fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
             
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-            
-            for _ in range(frame):
-                self.update(None)
-        
-            ax1.scatter(self.df['x'], self.df['y'],
-                       c=self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
-            
-            ax1.set_aspect('equal')
+
+            ax1.scatter(self.df['x'], self.df['y'], 
+                        c=self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
             ax1.set_xlim(self.xmin, self.xmax)
             ax1.set_ylim(self.ymin, self.ymax)
             ax1.set_title(f'Día {self.day}')
             
+
             ax2.set_xlim(0, max(100, frame))
             ax2.set_ylim(0, self.N)
             ax2.set_xlabel('Días')
             ax2.set_ylabel('Población')
             
-
             ax2.plot(self.time_data, self.S_data, 'k-', label=f'Susceptibles: {self.S_data[-1]}')
             ax2.plot(self.time_data, self.I_data, 'r-', label=f'Infectados: {self.I_data[-1]}')
             ax2.plot(self.time_data, self.R_data, 'g-', label=f'Recuperados: {self.R_data[-1]}')
@@ -210,7 +197,6 @@ class SIRModelVisual:
             plt.tight_layout()
             plt.show()
         
-
         self.df = original_df
         self.time_data = original_time
         self.S_data = original_S
@@ -220,8 +206,8 @@ class SIRModelVisual:
 
 def main():
     sir_visual = SIRModelVisual(SIR_PARAMS)
-    # sir_visual.animate()
-    sir_visual.show_frames([5,20,40])
+    sir_visual.animate() 
+    #sir_visual.show_frames([5,20,40]) #comentar para ver la animación
 
 if __name__ == "__main__":
     main()

@@ -170,6 +170,7 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
+        self.anim.save('sir_simulation_circulo.mp4', writer='ffmpeg')
         plt.show()
 
     def show_frames(self, frame_numbers):
@@ -239,8 +240,8 @@ class SIRModelVisual:
 
 def main():
     sir_visual = SIRModelVisual(SIR_PARAMS)
-    # sir_visual.animate() Comentar para ver solo los frames
-    sir_visual.show_frames([5,20,40]) #comentar para ver la animación
+    sir_visual.animate() #Comentar para ver solo los frames
+    #sir_visual.show_frames([5,20,40]) #comentar para ver la animación
 
 if __name__ == "__main__":
     main()

@@ -15,7 +15,19 @@ Este repositorio contiene una simulación del modelo SIR (Susceptible, Infectado
 
 ```sh
 pip install numpy pandas matplotlib
-## Visualizaciones
+```
+## Ciudad Rectangular
 
-![Ciudad Rectangular](sir_simulationreactangle.gif)
+![Ciudad Rectangular](Animaciones_gif/sir_simulationrectangle.gif)
 
+## Ciudad Rectangular con cluster
+
+![Ciudad Rectangular con cluster](Animaciones_gif/sir_simulationrectangulo.gif)
+
+## Ciudad Circular
+
+![Ciudad Circular](Animaciones_gif/sir_simulation_circulo.gif)
+
+## Ciudad Circular con cluster
+
+![Ciudad Circular con cluster](Animaciones_gif/sir_simulation_circulo_cluster.gif)
