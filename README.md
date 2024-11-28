@@ -18,11 +18,11 @@ pip install numpy pandas matplotlib
 ```
 ## Ciudad Rectangular
 
-![Ciudad Rectangular](Animaciones_gif/sir_simulationrectangle.gif)
+![Ciudad Rectangular](Animaciones_gif\sir_simulationreactangle.gif)
 
 ## Ciudad Rectangular con cluster
 
-![Ciudad Rectangular con cluster](Animaciones_gif/sir_simulationrectangulo.gif)
+![Ciudad Rectangular con cluster](Animaciones_gif/sir_simulation_rectangulo_cluster.gif)
 
 ## Ciudad Circular
 
