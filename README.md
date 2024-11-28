@@ -12,11 +12,15 @@ Este repositorio contiene una simulación del modelo SIR (Susceptible, Infectado
 ## Requisitos
 - Python 3
 - Bibliotecas: numpy, pandas, matplotlib
+- R
 
 ```sh
 pip install numpy pandas matplotlib
 ```
-
+Este paquete se puede instalar desde CRAN
+```sh
+install.packages("shinySIR")
+```
 ## Ciudad Rectangular
 ![Ciudad Rectangular](Animaciones_gif/sir_simulationreactangle.gif)
 
