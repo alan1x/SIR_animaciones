@@ -5,10 +5,9 @@ sir_model <- function(time, state, parameters) {
     # partir de inputs de estados y parametros
     N <- S+I+R 
     lambda <- beta * I/N
-    v<-V/S
-    dS <- -lambda * S +v             
+    dS <- -lambda * S              
     dI <- lambda * S - gamma * I   
-    dR <- gamma * I +(1-v)              
+    dR <- gamma * I             
     return(list(c(dS, dI, dR))) 
   })
 }
@@ -16,10 +15,10 @@ sir_model <- function(time, state, parameters) {
 run_shiny(model = "Modelo SIR", 
           neweqns = sir_model,
           ics = c(S = 4500, I = 1, R = 0),
-          parm0 = c(beta = 1, gamma = 1,v=1),
-          parm_names = c("Razón de Transmisión", "Razón de recuperación","Razón de vacunación"),
-          parm_min = c(beta = 0, gamma = 0,v=0),
-          parm_max = c(beta = 1.2, gamma = 1 ,v=10),
+          parm0 = c(beta = 1, gamma = 1),
+          parm_names = c("Razón de Transmisión", "Razón de recuperación"),
+          parm_min = c(beta = 0, gamma = 0),
+          parm_max = c(beta = 1.2, gamma = 1),
           tmax=200,
           legend_title = "Subconjunto",
           xlabel="Tiempo (dias)",
