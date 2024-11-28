@@ -3,102 +3,65 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
+
 GREY = (0.78, 0.78, 0.78)  # Susceptible
 RED = (0.96, 0.15, 0.15)   # Infectado
 GREEN = (0, 0.86, 0.03)    # Recuperado
 
 
 SIR_PARAMS = {
-    "N": 200,
-    "I0": 1,
-    "infection_radius": 0.4,
-    "infection_rate": 1,
-    "recovery_rate": 0.1,
-    "xmin": -2,
-    "xmax": 2,
-    "ymin": -2, 
-    "ymax": 2,
-    "min_infection_time": 1,
-    "cluster": {
-        "x": 0,        
-        "y": 0,        
-        "radius": 0.6,   
-        "density": 0.7,  
-        "sigma": 1     
-    }
+    "N": 200,              
+    "I0": 1,             
+    "infection_radius": 1, 
+    "infection_rate": 0.1,   
+    "recovery_rate": 0.1,   
+    "diameter": 9, 
+    "min_infection_time": 1  
 }
 
 class SIRModelVisual:
     def __init__(self, params):
-
         self.N = params["N"]
         self.I0 = params["I0"]
-        self.S0 = self.N - self.I0
-        self.R0 = 0
+        self.diameter = params.get("diameter", 4)
+        self.radius = self.diameter / 2
         
-
-        self.xmin = params.get("xmin", -2)
-        self.xmax = params.get("xmax", 2)
-        self.ymin = params.get("ymin", -2)
-        self.ymax = params.get("ymax", 2)
-        self.half_side = (self.xmax - self.xmin) / 2 
-        
-
         self.infection_radius = params["infection_radius"]
         self.recovery_rate = params["recovery_rate"]
         self.infection_rate = params.get("infection_rate", 0.3)
         self.min_infection_time = params.get("min_infection_time", 5)
-        self.infection_durations = np.zeros(params["N"]) 
+        self.infection_durations = np.zeros(params["N"])
         
-
         self.S_data = []
         self.I_data = []
         self.R_data = []
         self.time_data = []
-        
-
-        self.df = self._initialize_population(params)
         self.day = 0
         
 
+        self.df = self._initialize_population(params)
         self.setup_visualization()
-        
+
     def _initialize_population(self, params):
+
         N = self.N
-        cluster = params.get("cluster", {})
+        R = self.radius
         
         points = []
-        cluster_size = int(N * cluster.get("density", 0.7))
-        
-
-        cluster_center = np.array([cluster.get("x", 0), cluster.get("y", 0)])
-        cluster_radius = cluster.get("radius", 0.6)
-        sigma = cluster.get("sigma", 0.2)
-        
-
-        while len(points) < cluster_size:
-            point = np.random.normal(loc=cluster_center, scale=sigma, size=2)
-            x, y = point
-            
-
-            if (params["xmin"] <= x <= params["xmax"] and 
-                params["ymin"] <= y <= params["ymax"] and
-                (x-cluster_center[0])**2 + (y-cluster_center[1])**2 <= cluster_radius**2):
-                points.append((x, y))
-        
-
         while len(points) < N:
-            x = np.random.uniform(params["xmin"], params["xmax"])
-            y = np.random.uniform(params["ymin"], params["ymax"])
+
+            a = np.random.random() * 2 * np.pi
+            r = R * np.sqrt(np.random.random())
             
 
-            dx = x - cluster_center[0]
-            dy = y - cluster_center[1]
-            if dx*dx + dy*dy > cluster_radius*cluster_radius:
+            jitter = 0.1 * R  
+            x = r * np.cos(a) + np.random.uniform(-jitter, jitter)
+            y = r * np.sin(a) + np.random.uniform(-jitter, jitter)
+            
+            if x*x + y*y <= R*R:
                 points.append((x, y))
         
         points = np.array(points)
-        
 
         states = np.array(['S'] * N)
         infected_idx = np.random.choice(N, self.I0, replace=False)
@@ -111,7 +74,7 @@ class SIRModelVisual:
             'state': states,
             'iteration': 0
         })
-    
+
     def check_distance(self, x1, y1, x2, y2):
         distance = np.sqrt((x2-x1)**2 + (y2-y1)**2)
         return distance < self.infection_radius
@@ -120,6 +83,7 @@ class SIRModelVisual:
 
         infected = self.df[self.df['state'] == 'I']
         susceptible = self.df[self.df['state'] == 'S']
+        
         infected_mask = self.df['state'] == 'I'
         self.infection_durations[infected_mask] += 1
         
@@ -146,28 +110,22 @@ class SIRModelVisual:
     def setup_visualization(self):
         self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(12, 5))
         
-
         self.scatter = self.ax1.scatter(self.df['x'], self.df['y'], 
                                       c=self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
         
-
-        cluster = SIR_PARAMS["cluster"]
-        circle = plt.Circle((cluster["x"], cluster["y"]), cluster["radius"], 
-                           fill=False, color='black', linestyle='--', alpha=0.5)
+        circle = plt.Circle((0, 0), self.radius, fill=False, color='black')
         self.ax1.add_artist(circle)
         
-
         self.ax1.set_aspect('equal')
-        self.ax1.set_xlim(SIR_PARAMS["xmin"], SIR_PARAMS["xmax"])
-        self.ax1.set_ylim(SIR_PARAMS["ymin"], SIR_PARAMS["ymax"])
+        limit = self.radius * 1.1  
+        self.ax1.set_xlim(-limit, limit)
+        self.ax1.set_ylim(-limit, limit)
         
-
         self.ax2.set_xlim(0, 100)
         self.ax2.set_ylim(0, self.N)
         self.ax2.set_xlabel('Días')
         self.ax2.set_ylabel('Población')
         
-
         self.line_s, = self.ax2.plot([], [], 'k-', label=f'Susceptibles: {self.N-self.I0}')
         self.line_i, = self.ax2.plot([], [], 'r-', label=f'Infectados: {self.I0}')
         self.line_r, = self.ax2.plot([], [], 'g-', label=f'Recuperados: 0')
@@ -179,14 +137,21 @@ class SIRModelVisual:
 
         self.update_states()
         
+
         self.scatter.set_color(self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
         self.ax1.set_title(f"Día {self.day}")
+        
 
         s_count = sum(self.df['state'] == 'S')
         i_count = sum(self.df['state'] == 'I')
         r_count = sum(self.df['state'] == 'R')
         
-
+        self.line_s.set_label(f'Susceptibles: {s_count}')
+        self.line_i.set_label(f'Infectados: {i_count}')
+        self.line_r.set_label(f'Recuperados: {r_count}')
+        
+        self.ax2.legend()
+        
         self.time_data.append(self.day)
         self.S_data.append(s_count)
         self.I_data.append(i_count)
@@ -196,13 +161,6 @@ class SIRModelVisual:
         self.line_s.set_data(self.time_data, self.S_data)
         self.line_i.set_data(self.time_data, self.I_data)
         self.line_r.set_data(self.time_data, self.R_data)
-
-        self.line_s.set_label(f'Susceptibles: {s_count}')
-        self.line_i.set_label(f'Infectados: {i_count}')
-        self.line_r.set_label(f'Recuperados: {r_count}')
-        
-
-        self.ax2.legend()
         
 
         if self.day >= self.ax2.get_xlim()[1]:
@@ -212,17 +170,10 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
-        self.anim.save('Animaciones/sir_simulation_rectangulo_cluster.mp4', writer='ffmpeg')
-        plt.show()
-    
-    def show_frame(self, frame_number):
-
-        for _ in range(frame_number):
-            self.update(None)
+        self.anim.save('fase3/sir_simulation_circulo.mp4', writer='ffmpeg')
         plt.show()
 
     def show_frames(self, frame_numbers):
-
         original_df = self.df.copy()
         original_time = self.time_data.copy()
         original_S = self.S_data.copy()
@@ -247,22 +198,18 @@ class SIRModelVisual:
             for _ in range(frame):
                 self.update(None)
             
-
             ax1.scatter(self.df['x'], self.df['y'],
                        c=self.df['state'].map({'S': GREY, 'I': RED, 'R': GREEN}))
             
 
-            cluster = SIR_PARAMS["cluster"]
-            cluster_circle = plt.Circle((cluster["x"], cluster["y"]),
-                                      cluster["radius"],
-                                      fill=False, color='black',
-                                      linestyle='--', alpha=0.5)
-            ax1.add_artist(cluster_circle)
+            circle = plt.Circle((0, 0), self.radius, fill=False, color='black')
+            ax1.add_artist(circle)
             
 
             ax1.set_aspect('equal')
-            ax1.set_xlim(self.xmin, self.xmax)
-            ax1.set_ylim(self.ymin, self.ymax)
+            limit = self.radius * 1.1  
+            ax1.set_xlim(-limit, limit)
+            ax1.set_ylim(-limit, limit)
             ax1.set_title(f'Día {self.day}')
             
 
@@ -284,7 +231,6 @@ class SIRModelVisual:
             plt.tight_layout()
             plt.show()
         
-
         self.df = original_df
         self.time_data = original_time
         self.S_data = original_S
@@ -295,8 +241,7 @@ class SIRModelVisual:
 def main():
     sir_visual = SIRModelVisual(SIR_PARAMS)
     sir_visual.animate() #Comentar para ver solo los frames
-    
-    #sir_visual.show_frames([5, 20, 40])  #comentar para ver la animación
+    #sir_visual.show_frames([5,20,40]) #comentar para ver la animación
 
 if __name__ == "__main__":
     main()

@@ -159,7 +159,7 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
-        self.anim.save('Animaciones/sir_simulation_rectangulo.mp4', writer='ffmpeg') #comentar para ver la animación y descomentar para guardarla
+        self.anim.save('fase3/sir_simulation_rectangulo.mp4', writer='ffmpeg') #comentar para ver la animación y descomentar para guardarla
         plt.show()
 
     def show_frames(self, frame_numbers):

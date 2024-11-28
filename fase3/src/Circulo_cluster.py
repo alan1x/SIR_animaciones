@@ -216,7 +216,7 @@ class SIRModelVisual:
 
     def animate(self):
         self.anim = ani.FuncAnimation(self.fig, self.update, frames=100, interval=200, repeat=False)
-        self.anim.save('Animaciones/sir_simulation_circulo_cluster.mp4', writer='ffmpeg')
+        self.anim.save('fase3/sir_simulation_circulo_cluster.mp4', writer='ffmpeg')
         plt.show()
 
     def show_frames(self, frame_numbers):
